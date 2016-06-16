@@ -2,6 +2,6 @@
 	"scripts": [
 		{"id": "EEA38BC0-7281-4927-AB06-69E77D86A899", "path": "scripts\\feature_a.sql"},
 		{"id": "B4367D06-75F8-4A8E-83AC-FAB7A9A122E9", "path": "scripts\\feature_b.sql"},
-		{"id": "B4367D06-75F8-4A8E-83AC-FAB7A9A122E9", "path": "scripts\\feature_c.sql"}
+		{"id": "76AECE1F-7F86-4F7F-A903-72841EAE329F", "path": "scripts\\feature_c.sql"}
 	]
 }

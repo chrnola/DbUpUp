@@ -1,6 +1,5 @@
 {
 	"scripts": [
-		{"id": "EEA38BC0-7281-4927-AB06-69E77D86A899", "path": "path\to\some\script.sql"},
-		{"id": "B4367D06-75F8-4A8E-83AC-FAB7A9A122E9", "path": "path\to\next\script.sql"}
+		{"id": "078A044A-E2C7-4DF0-8019-69E83D31918C", "parent_id": "EEA38BC0-7281-4927-AB06-69E77D86A899", "path": "scripts\\feature_a_extension.sql"}
 	]
 }
