@@ -3,7 +3,7 @@ open System.IO
 
 type manifest = JsonProvider<"manifest.json">
 
-let pathToRoot = "C:\dev\DbUpUp\SampleWorkspace\Root";
+let pathToRoot = "..\..\..\SampleWorkspace\Root";
 
 let findManifestFileInDir (path:string) =
     let fullPath = Path.Combine [|path; "manifest.json"|]
