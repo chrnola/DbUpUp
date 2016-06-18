@@ -1,11 +1,23 @@
-﻿open FSharp.Data
+#if INTERACTIVE
+#r "../packages/FSharp.Data/lib/net40/FSharp.Data.dll"
+#endif
+
+open FSharp.Data
 open System.IO
 
 type manifest = JsonProvider<"manifest.json">
 type UnionManifests = { rootScripts: manifest.Script list; extScripts: manifest.Script list }
 
-let pathToRoot = "..\..\..\SampleWorkspace\Root";
-let pathToExt = "..\..\..\SampleWorkspace\Extension";
+#if INTERACTIVE
+// Sending to FSI in VS Code uses the root of the opened project Directory as the
+// working directory.
+let pathToRoot = "SampleWorkspace/Root";
+let pathToExt = "SampleWorkspace/Extension";
+#else
+// Differs from the compiled case: sln\proj\bin\config
+let pathToRoot = "..\..\..\SampleWorkspace/Root";
+let pathToExt = "..\..\..\SampleWorkspace/Extension";
+#endif
 
 let findManifestFileInDir (path:string) =
     let fullPath = Path.Combine [|path; "manifest.json"|]
@@ -56,10 +68,8 @@ let parseRootAndExt rootPath extPath =
 
     {rootScripts = parsedRootScripts; extScripts = parsedExtScripts}
 
-[<EntryPoint>]
-let main argv = 
-
-    let unionedScripts = parseRootAndExt pathToRoot pathToExt
+let main' rootPath extPath =
+    let unionedScripts = parseRootAndExt rootPath extPath
     let {rootScripts = parsedRootScripts; extScripts = parsedExtScripts} = unionedScripts
 
     printfn "Root scripts:"
@@ -72,5 +82,13 @@ let main argv =
         | None -> printfn "No dupes detected"
 
     printfn "Done"
+
+#if INTERACTIVE
+main' pathToRoot pathToExt
+#else
+[<EntryPoint>]
+let main argv = 
+    main' pathToRoot pathToExt
     System.Console.ReadLine() |> ignore
     0 // return an integer exit code
+#endif
