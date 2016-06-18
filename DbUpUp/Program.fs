@@ -52,10 +52,11 @@ let getEffectiveOrder unionedScripts =
 
     let groupedByParent = 
         parsedExtScripts
-            |> List.groupBy (fun script -> script.ParentId.Value)
+            |> Seq.groupBy (fun extScript -> extScript.ParentId.Value)
             |> dict
-
-
+    
+    parsedRootScripts
+     |> Seq.collect (fun rootScript -> rootScript :: parsedExtScripts |> Seq.where (fun extScript -> extScript.ParentId.Value = rootScript.Id))
 
 let reportDupes (dupes:(System.Guid * int) seq) =
     dupes |> Seq.iter (fun (id, count) -> printfn "ID: %A appears %i times" id count)
@@ -81,6 +82,10 @@ let main' rootPath extPath =
     match unionedScripts |> findDuplicateIds with
         | Some dupes -> reportDupes dupes
         | None -> printfn "No dupes detected"
+
+    unionedScripts
+     |> getEffectiveOrder
+     |> Seq.iter (fun script -> printfn "Execute script: %s" script.Path)
 
     printfn "Done"
 
