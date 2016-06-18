@@ -34,6 +34,16 @@ let findDuplicateIds unionedScripts =
     else
         Some(dupes)
 
+let getEffectiveOrder unionedScripts = 
+    let { rootScripts = parsedRootScripts; extScripts = parsedExtScripts } = unionedScripts
+
+    let groupedByParent = 
+        parsedExtScripts
+            |> List.groupBy (fun script -> script.ParentId.Value)
+            |> dict
+
+
+
 let reportDupes (dupes:(System.Guid * int) list) =
     dupes |> List.iter (fun (id, count) -> printfn "ID: %A appears %i times" id count)
     failwithf "Manifest contained duplicated IDs!"
