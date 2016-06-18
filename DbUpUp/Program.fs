@@ -36,12 +36,13 @@ let findDuplicateIds unionedScripts =
 
     let dupes =
         parsedRootScripts @ parsedExtScripts
-         |> List.groupBy (fun script -> script.Id)
-         |> List.map (fun (key, occurances) -> (key, List.length occurances))
-         |> List.where (fun (_, occurances) -> occurances > 1)
+         // List funcs not defined in Mono on OS X?
+         |> Seq.groupBy (fun script -> script.Id)
+         |> Seq.map (fun (key, occurances) -> (key, Seq.length occurances))
+         |> Seq.where (fun (_, occurances) -> occurances > 1)
 
     // TODO: There has to be a more idiotmatic way of doing this...
-    if List.isEmpty dupes then
+    if Seq.isEmpty dupes then
         None
     else
         Some(dupes)
@@ -56,8 +57,8 @@ let getEffectiveOrder unionedScripts =
 
 
 
-let reportDupes (dupes:(System.Guid * int) list) =
-    dupes |> List.iter (fun (id, count) -> printfn "ID: %A appears %i times" id count)
+let reportDupes (dupes:(System.Guid * int) seq) =
+    dupes |> Seq.iter (fun (id, count) -> printfn "ID: %A appears %i times" id count)
     failwithf "Manifest contained duplicated IDs!"
 
 let getScripts path = (findManifestFileInDir path |> parseManifestFile).Scripts
