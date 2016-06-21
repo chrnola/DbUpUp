@@ -15,8 +15,8 @@ let pathToRoot = "SampleWorkspace/Root";
 let pathToExt = "SampleWorkspace/Extension";
 #else
 // Differs from the compiled case: sln\proj\bin\config
-let pathToRoot = "..\..\..\SampleWorkspace/Root";
-let pathToExt = "..\..\..\SampleWorkspace/Extension";
+let pathToRoot = "..\..\..\SampleWorkspace\Root";
+let pathToExt = "..\..\..\SampleWorkspace\Extension";
 #endif
 
 let findManifestFileInDir (path:string) =
