@@ -28,7 +28,7 @@ let findManifestFileInDir (path:string) =
 
 let parseManifestFile pathToManifest =
     match pathToManifest with
-        | Some path -> File.OpenText path |> manifest.Load
+        | Some path -> (File.OpenText path |> manifest.Load).Scripts
         | None -> failwithf "This directory doesn't contain a manifest file!"
 
 let findDuplicateIds unionedScripts =
@@ -62,7 +62,7 @@ let reportDupes (dupes:(System.Guid * int) seq) =
     dupes |> Seq.iter (fun (id, count) -> printfn "ID: %A appears %i times" id count)
     failwithf "Manifest contained duplicated IDs!"
 
-let getScripts path = (findManifestFileInDir path |> parseManifestFile).Scripts
+let getScripts = findManifestFileInDir >> parseManifestFile
 
 let parseRootAndExt rootPath extPath =
     let parsedRootScripts = getScripts rootPath |> List.ofArray
