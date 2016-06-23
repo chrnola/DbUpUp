@@ -55,8 +55,19 @@ let getEffectiveOrder unionedScripts =
             |> Seq.groupBy (fun extScript -> extScript.ParentId.Value)
             |> dict
     
+    let isScriptChildOfParent (parent:manifest.Script) (script:manifest.Script) =
+        match script.ParentId with 
+            | Some parentGuid -> parentGuid = parent.Id 
+            | None -> false
+
+    let getExtScriptsForRoot (rootScript:manifest.Script) =
+        // Partially apply the rootScript to get a customized compare function
+        let compareWithRoot = isScriptChildOfParent rootScript
+
+        parsedExtScripts |> List.where compareWithRoot
+
     parsedRootScripts
-     |> Seq.collect (fun rootScript -> rootScript :: parsedExtScripts |> Seq.where (fun extScript -> extScript.ParentId.Value = rootScript.Id))
+     |> Seq.collect (fun rootScript -> rootScript :: getExtScriptsForRoot rootScript)
 
 let reportDupes (dupes:(System.Guid * int) seq) =
     dupes |> Seq.iter (fun (id, count) -> printfn "ID: %A appears %i times" id count)
