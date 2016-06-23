@@ -19,6 +19,32 @@ let pathToRoot = "..\..\..\SampleWorkspace\Root";
 let pathToExt = "..\..\..\SampleWorkspace\Extension";
 #endif
 
+type Failures =
+    | DuplicateIds of (System.Guid * int) seq
+
+type Successes =
+    | ParsedFiles of UnionManifests
+    | FlattenedTree of manifest.Script seq
+
+type ParseStatus =
+    | Success of Successes
+    | Failure of Failures
+
+let reportResults = function
+    | Success s ->
+        match s with
+        | ParsedFiles _ -> printfn "This is an intermediate step. Should probably be modeled differently..."
+        | FlattenedTree scripts -> scripts |> Seq.iter (fun script -> printfn "Execute script: %s" script.Path)
+    | Failure f -> 
+        match f with
+        | DuplicateIds dupes -> dupes |> Seq.iter (fun (id, count) -> printfn "ID: %A appears %i times" id count)
+
+let bind f = function
+    | Success s ->
+        match s with
+        | ParsedFiles s -> f s
+    | Failure f -> Failure f
+
 let findManifestFileInDir (path:string) =
     let fullPath = Path.Combine [|path; "manifest.json"|]
 
@@ -41,11 +67,10 @@ let findDuplicateIds unionedScripts =
          |> Seq.map (fun (key, occurances) -> (key, Seq.length occurances))
          |> Seq.where (fun (_, occurances) -> occurances > 1)
 
-    // TODO: There has to be a more idiotmatic way of doing this...
     if Seq.isEmpty dupes then
-        None
+        Success(ParsedFiles(unionedScripts))
     else
-        Some(dupes)
+        Failure(DuplicateIds(dupes))
 
 let getEffectiveOrder unionedScripts = 
     let { rootScripts = parsedRootScripts; extScripts = parsedExtScripts } = unionedScripts
@@ -63,11 +88,10 @@ let getEffectiveOrder unionedScripts =
     let getExtScriptsForRoot (rootScript:manifest.Script) =
         // Partially apply the rootScript to get a customized compare function
         let compareWithRoot = isScriptChildOfParent rootScript
-
         parsedExtScripts |> List.where compareWithRoot
 
-    parsedRootScripts
-     |> Seq.collect (fun rootScript -> rootScript :: getExtScriptsForRoot rootScript)
+    let flat = parsedRootScripts |> Seq.collect (fun rootScript -> rootScript :: getExtScriptsForRoot rootScript)
+    FlattenedTree(flat)
 
 let reportDupes (dupes:(System.Guid * int) seq) =
     dupes |> Seq.iter (fun (id, count) -> printfn "ID: %A appears %i times" id count)
@@ -90,13 +114,9 @@ let main' rootPath extPath =
     printfn "Extension scripts:"
     printfn "%A" parsedExtScripts
 
-    match unionedScripts |> findDuplicateIds with
-        | Some dupes -> reportDupes dupes
-        | None -> printfn "No dupes detected"
+    let processManifests = findDuplicateIds >> bind getEffectiveOrder >> reportResults
 
-    unionedScripts
-     |> getEffectiveOrder
-     |> Seq.iter (fun script -> printfn "Execute script: %s" script.Path)
+    unionedScripts |> processManifests
 
     printfn "Done"
 
